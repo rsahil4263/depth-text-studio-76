@@ -1,7 +1,7 @@
-import { ImageEditor } from "@/components/ImageEditor";
+import { HtmlImageEditor } from "@/components/HtmlImageEditor";
 
 const Index = () => {
-  return <ImageEditor />;
+  return <HtmlImageEditor />;
 };
 
 export default Index;
