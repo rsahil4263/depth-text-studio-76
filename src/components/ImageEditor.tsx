@@ -42,6 +42,7 @@ export const ImageEditor = () => {
   const [textOpacity, setTextOpacity] = useState([80]);
   const [textX, setTextX] = useState([50]);
   const [textY, setTextY] = useState([50]);
+  const [textRotation, setTextRotation] = useState([0]);
   const [blurStrength, setBlurStrength] = useState([3]);
   const [textBold, setTextBold] = useState(false);
   const [textItalic, setTextItalic] = useState(false);
@@ -328,7 +329,7 @@ export const ImageEditor = () => {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(image, 0, 0);
     
-    if (processingMode === "ai" && processedCanvas && subjectMask) {
+    if (processingMode === "ai" && processedCanvas && subjectMask && image) {
       // Use AI detection with text behind subject rendering
       const resultCanvas = renderTextBehindSubject(processedCanvas, subjectMask, text, {
         fontSize: fontSize[0],
@@ -337,11 +338,12 @@ export const ImageEditor = () => {
         opacity: textOpacity[0],
         x: (textX[0] / 100) * processedCanvas.width,
         y: (textY[0] / 100) * processedCanvas.height,
+        rotation: textRotation[0],
         blur: blurStrength[0],
         bold: textBold,
         italic: textItalic,
         underline: textUnderline
-      });
+      }, image);
       
       // Copy result to display canvas
       canvas.width = resultCanvas.width;
@@ -378,6 +380,12 @@ export const ImageEditor = () => {
       // Calculate position
       const x = (textX[0] / 100) * canvas.width;
       const y = (textY[0] / 100) * canvas.height;
+      
+      // Apply rotation
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate((textRotation[0] * Math.PI) / 180);
+      ctx.translate(-x, -y);
       
       // Render text with multiple layers for depth effect (advanced mode)
       if (processingMode === "advanced") {
@@ -425,7 +433,7 @@ export const ImageEditor = () => {
       
       ctx.restore();
     }
-  }, [image, processedCanvas, subjectMask, text, fontSize, fontFamily, textColor, textOpacity, textX, textY, blurStrength, textBold, textItalic, textUnderline, processingMode]);
+  }, [image, processedCanvas, subjectMask, text, fontSize, fontFamily, textColor, textOpacity, textX, textY, textRotation, blurStrength, textBold, textItalic, textUnderline, processingMode]);
 
   useEffect(() => {
     renderCanvas();
@@ -673,6 +681,18 @@ export const ImageEditor = () => {
                     onValueChange={setTextY}
                     max={100}
                     min={0}
+                    step={1}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm text-muted-foreground">Text Rotation: {textRotation[0]}°</Label>
+                  <Slider
+                    value={textRotation}
+                    onValueChange={setTextRotation}
+                    max={180}
+                    min={-180}
                     step={1}
                     className="mt-2"
                   />

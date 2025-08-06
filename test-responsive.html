@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1F2121;
+            color: white;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .breakpoint-info {
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .current-size {
+            font-size: 24px;
+            font-weight: bold;
+            color: #20B2AA;
+        }
+        .breakpoint-list {
+            margin-top: 20px;
+        }
+        .breakpoint-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #333;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .active {
+            background: #20B2AA;
+            color: white;
+        }
+        .resize-instructions {
+            background: #444;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Responsive Breakpoint Test</h1>
+        
+        <div class="breakpoint-info">
+            <div class="current-size" id="currentSize">Current: 0px</div>
+            <div id="currentBreakpoint">Breakpoint: Desktop</div>
+        </div>
+        
+        <div class="breakpoint-list">
+            <div class="breakpoint-item" id="desktop">
+                <span>Desktop</span>
+                <span>≥ 1280px</span>
+            </div>
+            <div class="breakpoint-item" id="tablet">
+                <span>Tablet</span>
+                <span>768px - 1279px</span>
+            </div>
+            <div class="breakpoint-item" id="mobile-md">
+                <span>Mobile Medium</span>
+                <span>480px - 767px</span>
+            </div>
+            <div class="breakpoint-item" id="mobile-sm">
+                <span>Mobile Small</span>
+                <span>< 480px</span>
+            </div>
+        </div>
+        
+        <div class="resize-instructions">
+            <h3>Test Instructions:</h3>
+            <ul>
+                <li>Resize your browser window to test different breakpoints</li>
+                <li>The active breakpoint will be highlighted in teal</li>
+                <li>Check that the UI components adapt appropriately at each breakpoint</li>
+                <li>Test touch interactions on mobile devices or browser dev tools</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        function updateBreakpointInfo() {
+            const width = window.innerWidth;
+            const currentSizeEl = document.getElementById('currentSize');
+            const currentBreakpointEl = document.getElementById('currentBreakpoint');
+            
+            // Clear all active states
+            document.querySelectorAll('.breakpoint-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            currentSizeEl.textContent = `Current: ${width}px`;
+            
+            let breakpoint = '';
+            let activeId = '';
+            
+            if (width >= 1280) {
+                breakpoint = 'Desktop';
+                activeId = 'desktop';
+            } else if (width >= 768) {
+                breakpoint = 'Tablet';
+                activeId = 'tablet';
+            } else if (width >= 480) {
+                breakpoint = 'Mobile Medium';
+                activeId = 'mobile-md';
+            } else {
+                breakpoint = 'Mobile Small';
+                activeId = 'mobile-sm';
+            }
+            
+            currentBreakpointEl.textContent = `Breakpoint: ${breakpoint}`;
+            document.getElementById(activeId).classList.add('active');
+        }
+        
+        // Update on load and resize
+        updateBreakpointInfo();
+        window.addEventListener('resize', updateBreakpointInfo);
+        
+        // Update every 100ms for smooth updates during resize
+        setInterval(updateBreakpointInfo, 100);
+    </script>
+</body>
+</html>

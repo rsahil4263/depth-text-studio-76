@@ -1,0 +1,136 @@
+/* Mobile Performance Optimization CSS Variables */
+
+:root {
+  /* Base animation timing for mobile devices */
+  --mobile-animation-fast: 150ms;
+  --mobile-animation-normal: 250ms;
+  --mobile-animation-slow: 400ms;
+  --mobile-animation-panel: 300ms;
+  
+  /* Easing functions optimized for mobile */
+  --mobile-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --mobile-ease-in-out: cubic-bezier(0.4, 0.0, 0.2, 1);
+  --mobile-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  
+  /* Performance-aware frame rates */
+  --mobile-fps-high: 60;
+  --mobile-fps-medium: 30;
+  --mobile-fps-low: 20;
+}
+
+/* Adaptive timing for different device capabilities */
+
+/* Small mobile devices - more conservative timing */
+@media (max-width: 480px) {
+  :root {
+    --mobile-animation-fast: 200ms;
+    --mobile-animation-normal: 350ms;
+    --mobile-animation-slow: 500ms;
+    --mobile-animation-panel: 400ms;
+  }
+}
+
+/* Low resolution devices - slower animations */
+@media (max-resolution: 150dpi) {
+  :root {
+    --mobile-animation-fast: 250ms;
+    --mobile-animation-normal: 400ms;
+    --mobile-animation-slow: 600ms;
+    --mobile-animation-panel: 450ms;
+  }
+}
+
+/* Battery-aware optimizations */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mobile-animation-fast: 100ms;
+    --mobile-animation-normal: 150ms;
+    --mobile-animation-slow: 200ms;
+    --mobile-animation-panel: 200ms;
+    
+    /* Simpler easing for reduced motion */
+    --mobile-ease-out: ease-out;
+    --mobile-ease-in-out: ease-in-out;
+    --mobile-ease-bounce: ease-out;
+  }
+}
+
+/* High-end devices - can handle faster animations */
+@media (min-resolution: 300dpi) and (min-width: 768px) {
+  :root {
+    --mobile-animation-fast: 120ms;
+    --mobile-animation-normal: 200ms;
+    --mobile-animation-slow: 300ms;
+    --mobile-animation-panel: 250ms;
+  }
+}
+
+/* Touch-specific optimizations */
+@media (pointer: coarse) {
+  :root {
+    /* Slightly longer animations for touch interactions */
+    --mobile-animation-fast: calc(var(--mobile-animation-fast) * 1.1);
+    --mobile-animation-normal: calc(var(--mobile-animation-normal) * 1.1);
+  }
+}
+
+/* Memory-efficient animation classes */
+.mobile-optimized-transition {
+  transition-property: transform, opacity, background-color;
+  transition-duration: var(--mobile-animation-normal);
+  transition-timing-function: var(--mobile-ease-out);
+  will-change: transform;
+}
+
+.mobile-fast-transition {
+  transition-property: transform, opacity;
+  transition-duration: var(--mobile-animation-fast);
+  transition-timing-function: var(--mobile-ease-out);
+  will-change: transform;
+}
+
+.mobile-slow-transition {
+  transition-property: transform, opacity, background-color, box-shadow;
+  transition-duration: var(--mobile-animation-slow);
+  transition-timing-function: var(--mobile-ease-in-out);
+  will-change: transform;
+}
+
+/* Hardware acceleration helpers */
+.mobile-gpu-accelerated {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Battery-aware animation utilities */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-optimized-transition,
+  .mobile-fast-transition,
+  .mobile-slow-transition {
+    transition: none;
+  }
+  
+  .mobile-gpu-accelerated {
+    will-change: auto;
+  }
+}
+
+/* Performance monitoring classes for debugging */
+.mobile-performance-debug {
+  outline: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+.mobile-performance-debug::after {
+  content: 'PERF';
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  font-size: 10px;
+  padding: 2px 4px;
+  z-index: 9999;
+}

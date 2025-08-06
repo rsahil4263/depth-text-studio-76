@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Image Editor Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1F2121;
+            color: white;
+        }
+        .test-container {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .test-info {
+            background: rgba(32, 178, 170, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(32, 178, 170, 0.3);
+        }
+        .test-button {
+            background: linear-gradient(135deg, #20B2AA 0%, #1E90FF 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.2s ease;
+        }
+        .test-button:hover {
+            transform: translateY(-2px);
+        }
+        .test-result {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Mobile Image Editor Test</h1>
+        
+        <div class="test-info">
+            <h3>Testing Mobile Fixes</h3>
+            <p>This page tests the mobile image editor fixes for:</p>
+            <ul style="text-align: left;">
+                <li>Image upload progress tracking</li>
+                <li>Text-behind-subject rendering</li>
+                <li>Mobile device detection</li>
+                <li>Touch interaction support</li>
+            </ul>
+        </div>
+
+        <button class="test-button" onclick="testMobileDetection()">
+            Test Mobile Detection
+        </button>
+        
+        <button class="test-button" onclick="testTouchSupport()">
+            Test Touch Support
+        </button>
+        
+        <button class="test-button" onclick="openMainApp()">
+            Open Main App
+        </button>
+
+        <div id="test-results" class="test-result" style="display: none;">
+            <h4>Test Results:</h4>
+            <div id="results-content"></div>
+        </div>
+    </div>
+
+    <script>
+        function testMobileDetection() {
+            const results = [];
+            
+            // Test user agent detection
+            const isMobileUserAgent = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            results.push(`Mobile User Agent: ${isMobileUserAgent ? '✅ Yes' : '❌ No'}`);
+            
+            // Test touch support
+            const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            results.push(`Touch Support: ${isTouchDevice ? '✅ Yes' : '❌ No'}`);
+            
+            // Test screen size
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            results.push(`Screen Size: ${screenWidth}x${screenHeight}`);
+            
+            // Test device pixel ratio
+            const devicePixelRatio = window.devicePixelRatio || 1;
+            results.push(`Device Pixel Ratio: ${devicePixelRatio}`);
+            
+            // Test hardware concurrency
+            const hardwareConcurrency = navigator.hardwareConcurrency || 'Unknown';
+            results.push(`CPU Cores: ${hardwareConcurrency}`);
+            
+            // Test memory (if available)
+            const deviceMemory = navigator.deviceMemory ? `${navigator.deviceMemory}GB` : 'Unknown';
+            results.push(`Device Memory: ${deviceMemory}`);
+            
+            // Determine if should use mobile UI
+            const shouldUseMobileUI = isMobileUserAgent || isTouchDevice || screenWidth < 768;
+            results.push(`Should Use Mobile UI: ${shouldUseMobileUI ? '✅ Yes' : '❌ No'}`);
+            
+            showResults(results);
+        }
+        
+        function testTouchSupport() {
+            const results = [];
+            
+            // Test various touch APIs
+            results.push(`ontouchstart: ${'ontouchstart' in window ? '✅ Supported' : '❌ Not supported'}`);
+            results.push(`navigator.maxTouchPoints: ${navigator.maxTouchPoints || 0}`);
+            results.push(`Touch Events: ${window.TouchEvent ? '✅ Supported' : '❌ Not supported'}`);
+            
+            // Test pointer events
+            results.push(`Pointer Events: ${window.PointerEvent ? '✅ Supported' : '❌ Not supported'}`);
+            
+            // Test file input capture
+            const input = document.createElement('input');
+            input.type = 'file';
+            const supportsCapture = 'capture' in input;
+            results.push(`File Input Capture: ${supportsCapture ? '✅ Supported' : '❌ Not supported'}`);
+            
+            showResults(results);
+        }
+        
+        function openMainApp() {
+            window.location.href = '/';
+        }
+        
+        function showResults(results) {
+            const resultsDiv = document.getElementById('test-results');
+            const contentDiv = document.getElementById('results-content');
+            
+            contentDiv.innerHTML = results.map(result => `<div style="margin: 5px 0;">${result}</div>`).join('');
+            resultsDiv.style.display = 'block';
+        }
+        
+        // Auto-run mobile detection on load
+        window.addEventListener('load', () => {
+            setTimeout(testMobileDetection, 500);
+        });
+    </script>
+</body>
+</html>

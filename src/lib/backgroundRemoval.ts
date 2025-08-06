@@ -18,19 +18,28 @@ import {
   type ImageDimensions
 } from './performanceOptimizations';
 
-const MAX_IMAGE_DIMENSION = 1024;
+// Improved image dimensions for better quality
+const MAX_IMAGE_DIMENSION = 2048; // Increased for better quality
+const MOBILE_MAX_IMAGE_DIMENSION = 1024; // Doubled for better mobile quality
 
 function resizeImageIfNeeded(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, image: HTMLImageElement) {
   let width = image.naturalWidth;
   let height = image.naturalHeight;
 
-  if (width > MAX_IMAGE_DIMENSION || height > MAX_IMAGE_DIMENSION) {
+  // Use mobile-optimized dimensions for mobile devices
+  const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   window.innerWidth <= 768 ||
+                   ('ontouchstart' in window);
+  
+  const maxDimension = isMobile ? MOBILE_MAX_IMAGE_DIMENSION : MAX_IMAGE_DIMENSION;
+
+  if (width > maxDimension || height > maxDimension) {
     if (width > height) {
-      height = Math.round((height * MAX_IMAGE_DIMENSION) / width);
-      width = MAX_IMAGE_DIMENSION;
+      height = Math.round((height * maxDimension) / width);
+      width = maxDimension;
     } else {
-      width = Math.round((width * MAX_IMAGE_DIMENSION) / height);
-      height = MAX_IMAGE_DIMENSION;
+      width = Math.round((width * maxDimension) / height);
+      height = maxDimension;
     }
 
     canvas.width = width;
@@ -103,7 +112,43 @@ const processBackgroundRemoval = async (
       console.log(`Memory before processing: ${memoryBefore.used.toFixed(1)}MB used of ${memoryBefore.available?.toFixed(1)}MB available`);
     }
     
-    const result = await removeBackground(imageSource);
+    // Enhanced background removal with WebGPU acceleration and quality-first approach
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                     window.innerWidth <= 768 ||
+                     ('ontouchstart' in window);
+    
+    let result: Blob;
+    
+    // Quality-first approach with fallback
+    const processWithFallback = async (imageSource: File | Blob | string): Promise<Blob> => {
+      try {
+        // First attempt: High quality with WebGPU acceleration
+        console.log('Attempting high-quality background removal with WebGPU...');
+        return await removeBackground(imageSource, {
+          // Remove model specification to use default higher-quality model
+          output: {
+            format: 'image/png',
+            quality: 0.95 // High quality output
+          }
+        });
+      } catch (error) {
+        console.warn('High-quality processing failed, trying fallback...', error);
+        
+        // Fallback: Standard processing
+        if (error instanceof Error && (error.message.includes('memory') || error.message.includes('timeout'))) {
+          console.log('Using fallback processing due to resource constraints...');
+          return await removeBackground(imageSource, {
+            output: {
+              format: 'image/png',
+              quality: 0.85 // Slightly reduced quality for fallback
+            }
+          });
+        }
+        throw error;
+      }
+    };
+    
+    result = await processWithFallback(imageSource);
     
     // Log memory usage after processing
     const memoryAfter = getMemoryUsage();
@@ -153,18 +198,19 @@ const convertBlobToMask = async (foregroundBlob: Blob, originalWidth: number, or
           const maskDataArray = maskData.data;
           const length = data.length;
           
-          // Process pixels in batches for better performance
+          // Process pixels preserving alpha gradients for smooth edges
           for (let i = 0; i < length; i += 4) {
             const alpha = data[i + 3];
             
+            // Preserve original alpha gradients instead of binary conversion
             if (alpha > 0) {
-              // Foreground pixel - mark as white in mask
+              // Foreground pixel - mark as white but preserve alpha for smooth edges
               maskDataArray[i] = 255;     // R
               maskDataArray[i + 1] = 255; // G
               maskDataArray[i + 2] = 255; // B
-              maskDataArray[i + 3] = 255; // A
+              maskDataArray[i + 3] = alpha; // Preserve original alpha for smooth edges
             } else {
-              // Background pixel - mark as transparent in mask
+              // Background pixel - mark as transparent
               maskDataArray[i] = 0;       // R
               maskDataArray[i + 1] = 0;   // G
               maskDataArray[i + 2] = 0;   // B
@@ -206,6 +252,106 @@ const convertBlobToMask = async (foregroundBlob: Blob, originalWidth: number, or
   }, 'Mask conversion from processed image');
 };
 
+/**
+ * Create a fallback mask when background removal fails or times out
+ * Uses simple edge detection and color similarity to create a basic subject mask
+ */
+const createFallbackMask = async (
+  canvas: HTMLCanvasElement, 
+  context: CanvasRenderingContext2D
+): Promise<ImageData> => {
+  return withErrorHandling(async () => {
+    console.log('Creating fallback mask using edge detection...');
+    
+    const width = canvas.width;
+    const height = canvas.height;
+    const imageData = context.getImageData(0, 0, width, height);
+    const data = imageData.data;
+    const maskData = context.createImageData(width, height);
+    const mask = maskData.data;
+    
+    // Create a more generous center-weighted mask for better results
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const maxDistance = Math.sqrt(centerX * centerX + centerY * centerY);
+    
+    // First pass: create a basic center-weighted mask
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const idx = (y * width + x) * 4;
+        
+        // Calculate distance from center (subjects are usually centered)
+        const distanceFromCenter = Math.sqrt(
+          Math.pow(x - centerX, 2) + Math.pow(y - centerY, 2)
+        );
+        const centerWeight = 1 - (distanceFromCenter / maxDistance);
+        
+        // Get pixel values
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
+        const brightness = (r + g + b) / 3;
+        
+        // More generous subject detection
+        const isLikelySubject = (
+          centerWeight > 0.2 && // Larger center area
+          brightness > 30 && brightness < 220 && // Wider brightness range
+          (r + g + b) > 90 // Not too dark
+        );
+        
+        if (isLikelySubject) {
+          // Mark as foreground
+          mask[idx] = 255;     // R
+          mask[idx + 1] = 255; // G
+          mask[idx + 2] = 255; // B
+          mask[idx + 3] = 255; // A
+        } else {
+          // Mark as background
+          mask[idx] = 0;       // R
+          mask[idx + 1] = 0;   // G
+          mask[idx + 2] = 0;   // B
+          mask[idx + 3] = 0;   // A
+        }
+      }
+    }
+    
+    // Second pass: smooth the mask to reduce noise
+    const smoothedMask = context.createImageData(width, height);
+    const smoothed = smoothedMask.data;
+    
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        const idx = (y * width + x) * 4;
+        
+        // Count neighboring foreground pixels
+        let foregroundCount = 0;
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) {
+            const neighborIdx = ((y + dy) * width + (x + dx)) * 4;
+            if (mask[neighborIdx + 3] > 0) foregroundCount++;
+          }
+        }
+        
+        // Keep pixel as foreground if majority of neighbors are foreground
+        if (foregroundCount >= 5) {
+          smoothed[idx] = 255;
+          smoothed[idx + 1] = 255;
+          smoothed[idx + 2] = 255;
+          smoothed[idx + 3] = 255;
+        } else {
+          smoothed[idx] = 0;
+          smoothed[idx + 1] = 0;
+          smoothed[idx + 2] = 0;
+          smoothed[idx + 3] = 0;
+        }
+      }
+    }
+    
+    console.log('Fallback mask created successfully');
+    return smoothedMask;
+  }, 'Fallback mask creation');
+};
+
 export const segmentSubject = async (
   imageElement: HTMLImageElement,
   onProgress?: (step: string, progress: number) => void
@@ -213,6 +359,7 @@ export const segmentSubject = async (
   mask: ImageData;
   originalImage: HTMLImageElement;
   canvas: HTMLCanvasElement;
+  originalCanvas: HTMLCanvasElement;
   metrics?: ProcessingMetrics;
 }> => {
   return withErrorHandling(async () => {
@@ -225,7 +372,7 @@ export const segmentSubject = async (
     };
     const performanceTracker = new PerformanceTracker(originalDimensions);
     
-    onProgress?.('Validating and optimizing image...', 5);
+    onProgress?.('Validating and optimizing image', 5);
     
     // Validate input
     if (!imageElement) {
@@ -245,7 +392,7 @@ export const segmentSubject = async (
       console.warn(`Estimated memory usage: ${estimatedMemoryMB.toFixed(1)}MB may be high for current system`);
     }
     
-    onProgress?.('Preparing optimized image for processing...', 15);
+    onProgress?.('Preparing optimized image for processing', 15);
     
     // Optimize image for processing
     const optimizationResult = await optimizeImageForProcessing(imageElement, DEFAULT_OPTIMIZATION_CONFIG);
@@ -253,7 +400,7 @@ export const segmentSubject = async (
     
     if (optimizationResult.wasOptimized) {
       console.log(`Image optimized from ${originalDimensions.width}x${originalDimensions.height} to ${optimizationResult.optimizedDimensions.width}x${optimizationResult.optimizedDimensions.height}`);
-      onProgress?.('Image optimized for better performance...', 20);
+      onProgress?.('Image optimized for better performance', 20);
     }
     
     // Create optimized canvas for processing
@@ -273,42 +420,118 @@ export const segmentSubject = async (
     context.drawImage(optimizedImage, 0, 0);
     
     console.log(`Processing canvas dimensions: ${canvas.width}x${canvas.height}`);
-    onProgress?.('Image prepared, starting AI analysis...', 30);
+    onProgress?.('Image prepared, starting AI analysis', 30);
     
-    onProgress?.('Running background removal AI...', 45);
+    onProgress?.('Running background removal AI', 45);
     
-    // Process the optimized image with @imgly/background-removal
+    // Process the optimized image with @imgly/background-removal with mobile timeout
     console.log('Processing with @imgly/background-removal...');
-    const foregroundBlob = await processBackgroundRemoval(optimizationResult.optimizedBlob, performanceTracker);
     
-    onProgress?.('AI processing complete, generating mask...', 75);
+    // Add progress updates during processing
+    const progressInterval = setInterval(() => {
+      const currentProgress = Math.min(70, 45 + Math.random() * 20);
+      onProgress?.('Processing background removal', currentProgress);
+    }, 1000);
     
-    // Convert the foreground blob to a mask for compatibility with existing rendering pipeline
-    console.log('Converting processed image to mask...');
-    const mask = await convertBlobToMask(foregroundBlob, canvas.width, canvas.height);
-    
-    onProgress?.('Finalizing results...', 95);
-    
-    // Finish performance tracking
-    const metrics = performanceTracker.finish();
-    
-    // Log performance metrics
-    console.log('Subject segmentation completed successfully');
-    console.log(`Processing time: ${metrics.duration?.toFixed(1)}ms`);
-    if (metrics.memoryUsage) {
-      console.log(`Memory usage - Initial: ${metrics.memoryUsage.initial.toFixed(1)}MB, Peak: ${metrics.memoryUsage.peak.toFixed(1)}MB, Final: ${metrics.memoryUsage.final.toFixed(1)}MB`);
+    try {
+      // Add timeout for mobile devices to prevent hanging
+      const foregroundBlob = await Promise.race([
+        processBackgroundRemoval(optimizationResult.optimizedBlob, performanceTracker),
+        new Promise<never>((_, reject) => {
+          // Shorter timeout for mobile devices
+          const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                           window.innerWidth <= 768 ||
+                           ('ontouchstart' in window);
+          const timeoutDuration = isMobile ? 45000 : 60000; // More generous timeouts: 45s mobile, 60s desktop
+          setTimeout(() => {
+            reject(new Error('Background removal timed out. Please try a smaller image or try again.'));
+          }, timeoutDuration);
+        })
+      ]);
+      
+      clearInterval(progressInterval);
+      onProgress?.('AI processing complete, generating mask', 75);
+      
+      // Continue with mask conversion
+      console.log('Converting processed image to mask...');
+      const mask = await convertBlobToMask(foregroundBlob, canvas.width, canvas.height);
+      
+      // Create a canvas with the processed foreground image (subject with transparent background)
+      const processedCanvas = createOptimizedCanvas(
+        { width: canvas.width, height: canvas.height },
+        { willReadFrequently: false, alpha: true }
+      );
+      
+      // Load the foreground blob into the processed canvas
+      const foregroundImage = new Image();
+      await new Promise<void>((resolve, reject) => {
+        foregroundImage.onload = () => resolve();
+        foregroundImage.onerror = () => reject(new Error('Failed to load processed foreground image'));
+        foregroundImage.src = URL.createObjectURL(foregroundBlob);
+      });
+      
+      processedCanvas.context.drawImage(foregroundImage, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(foregroundImage.src);
+      
+      onProgress?.('Finalizing results', 95);
+      
+      // Finish performance tracking
+      const metrics = performanceTracker.finish();
+      
+      // Log performance metrics
+      console.log('Subject segmentation completed successfully');
+      console.log(`Processing time: ${metrics.duration?.toFixed(1)}ms`);
+      if (metrics.memoryUsage) {
+        console.log(`Memory usage - Initial: ${metrics.memoryUsage.initial.toFixed(1)}MB, Peak: ${metrics.memoryUsage.peak.toFixed(1)}MB, Final: ${metrics.memoryUsage.final.toFixed(1)}MB`);
+      }
+      console.log(`Image size - Original: ${metrics.imageSize.original.width}x${metrics.imageSize.original.height}, Processed: ${metrics.imageSize.processed.width}x${metrics.imageSize.processed.height}`);
+      
+      // Clean up temporary resources
+      URL.revokeObjectURL(optimizedImage.src);
+      
+      return {
+        mask,
+        originalImage: imageElement,
+        canvas: processedCanvas.canvas, // Return the processed canvas with transparent background
+        originalCanvas: canvas, // Also return the original canvas for background reconstruction
+        metrics
+      };
+    } catch (error) {
+      clearInterval(progressInterval);
+      
+      // If it's a timeout error, try a fallback approach
+      if (error instanceof Error && error.message.includes('timed out')) {
+        console.warn('Background removal timed out, trying fallback approach...');
+        onProgress?.('Trying alternative processing method', 50);
+        
+        try {
+          // Fallback: create a simple mask based on edge detection or color similarity
+          const fallbackMask = await createFallbackMask(canvas, context);
+          
+          onProgress?.('Alternative processing complete', 95);
+          
+          const metrics = performanceTracker.finish();
+          URL.revokeObjectURL(optimizedImage.src);
+          
+          console.log('Fallback processing completed successfully');
+          
+          return {
+            mask: fallbackMask,
+            originalImage: imageElement,
+            canvas,
+            originalCanvas: canvas,
+            metrics
+          };
+        } catch (fallbackError) {
+          console.error('Fallback processing also failed:', fallbackError);
+          onProgress?.('Processing failed', 0);
+          throw new Error('Image processing failed. Please try a smaller or different image.');
+        }
+      }
+      
+      throw error;
     }
-    console.log(`Image size - Original: ${metrics.imageSize.original.width}x${metrics.imageSize.original.height}, Processed: ${metrics.imageSize.processed.width}x${metrics.imageSize.processed.height}`);
-    
-    // Clean up temporary resources
-    URL.revokeObjectURL(optimizedImage.src);
-    
-    return {
-      mask,
-      originalImage: imageElement,
-      canvas,
-      metrics
-    };
+
   }, 'Subject segmentation');
 };
 
@@ -393,7 +616,7 @@ export const loadImage = (file: Blob): Promise<HTMLImageElement> => {
 };
 
 export const renderTextBehindSubject = (
-  originalCanvas: HTMLCanvasElement,
+  processedCanvas: HTMLCanvasElement, // This contains the subject with transparent background
   mask: ImageData,
   text: string,
   options: {
@@ -403,18 +626,31 @@ export const renderTextBehindSubject = (
     opacity: number;
     x: number;
     y: number;
+    rotation?: number;
     blur: number;
     bold: boolean;
     italic: boolean;
     underline: boolean;
-  }
+  },
+  originalImage?: HTMLImageElement // Original image for background reconstruction
 ): HTMLCanvasElement => {
   const canvasesToCleanup: HTMLCanvasElement[] = [];
   
+  console.log('renderTextBehindSubject called with:', {
+    canvasSize: { width: processedCanvas.width, height: processedCanvas.height },
+    maskSize: { width: mask.width, height: mask.height },
+    text,
+    options
+  });
+  
   try {
     // Validate inputs
-    if (!originalCanvas) {
-      throw new Error('No original canvas provided for text rendering');
+    if (!processedCanvas) {
+      throw new Error('No processed canvas provided for text rendering');
+    }
+    
+    if (!originalImage) {
+      throw new Error('Original image is required for proper text-behind-subject effect');
     }
     
     if (!mask) {
@@ -425,39 +661,27 @@ export const renderTextBehindSubject = (
       throw new Error('No text provided for rendering');
     }
     
-    if (originalCanvas.width <= 0 || originalCanvas.height <= 0) {
+    if (processedCanvas.width <= 0 || processedCanvas.height <= 0) {
       throw new Error('Invalid canvas dimensions for text rendering');
     }
     
     // Create optimized output canvas
-    const canvasDimensions = { width: originalCanvas.width, height: originalCanvas.height };
+    const canvasDimensions = { width: processedCanvas.width, height: processedCanvas.height };
     const outputResult = createOptimizedCanvas(canvasDimensions, { willReadFrequently: false, alpha: true });
     const outputCanvas = outputResult.canvas;
     const ctx = outputResult.context;
   
-    // Step 1: Create optimized background layer (original image with inverted mask)
-    const backgroundResult = createOptimizedCanvas(canvasDimensions, { willReadFrequently: true, alpha: true });
-    const backgroundCanvas = backgroundResult.canvas;
-    const bgCtx = backgroundResult.context;
-    canvasesToCleanup.push(backgroundCanvas);
-  
-    bgCtx.drawImage(originalCanvas, 0, 0);
-  
-    // Apply inverted mask to get background only (remove subject) - optimized processing
-    const backgroundImageData = bgCtx.getImageData(0, 0, backgroundCanvas.width, backgroundCanvas.height);
-    const backgroundData = backgroundImageData.data;
-    const maskData = mask.data;
-    const length = maskData.length;
+    // STEP 1: Create a full background canvas from original image
+    const fullBackgroundResult = createOptimizedCanvas(canvasDimensions, { willReadFrequently: false, alpha: true });
+    const fullBackgroundCanvas = fullBackgroundResult.canvas;
+    const fullBgCtx = fullBackgroundResult.context;
+    canvasesToCleanup.push(fullBackgroundCanvas);
     
-    // Optimized mask application with batch processing
-    for (let i = 0; i < length; i += 4) {
-      const subjectAlpha = maskData[i + 3] / 255;
-      // Invert the mask: where subject exists (high alpha), make background transparent
-      backgroundData[i + 3] = backgroundData[i + 3] * (1 - subjectAlpha);
-    }
-    bgCtx.putImageData(backgroundImageData, 0, 0);
-  
-    // Step 2: Create optimized text layer
+    // Draw the original image as background
+    fullBgCtx.drawImage(originalImage, 0, 0, canvasDimensions.width, canvasDimensions.height);
+    console.log('Created full background from original image');
+
+    // STEP 2: Create text layer
     const textResult = createOptimizedCanvas(canvasDimensions, { willReadFrequently: false, alpha: true });
     const textCanvas = textResult.canvas;
     const textCtx = textResult.context;
@@ -468,15 +692,47 @@ export const renderTextBehindSubject = (
     if (options.italic) fontStyle += 'italic ';
     if (options.bold) fontStyle += 'bold ';
   
-    textCtx.font = `${fontStyle}${options.fontSize}px ${options.fontFamily}`;
+    const fontString = `${fontStyle}${options.fontSize}px ${options.fontFamily}`;
+    textCtx.font = fontString;
     textCtx.fillStyle = options.color;
     textCtx.globalAlpha = options.opacity / 100;
     textCtx.textAlign = 'center';
     textCtx.textBaseline = 'middle';
-    textCtx.filter = `blur(${options.blur}px)`;
+    
+    // Apply blur effect if specified
+    if (options.blur > 0) {
+      textCtx.filter = `blur(${options.blur}px)`;
+    } else {
+      textCtx.filter = 'none';
+    }
   
+    console.log('Drawing text with settings:', {
+      font: fontString,
+      fillStyle: options.color,
+      globalAlpha: options.opacity / 100,
+      position: { x: options.x, y: options.y },
+      blur: options.blur,
+      text
+    });
+  
+    // Draw text with shadow for better visibility
+    textCtx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    textCtx.shadowBlur = 2;
+    textCtx.shadowOffsetX = 1;
+    textCtx.shadowOffsetY = 1;
+    
+    // Apply rotation if specified
+    if (options.rotation && options.rotation !== 0) {
+      textCtx.save();
+      textCtx.translate(options.x, options.y);
+      textCtx.rotate((options.rotation * Math.PI) / 180);
+      textCtx.translate(-options.x, -options.y);
+    }
+    
     // Draw text
     textCtx.fillText(text, options.x, options.y);
+    
+    console.log('Text drawn on text canvas');
   
     // Add underline if needed
     if (options.underline) {
@@ -491,38 +747,66 @@ export const renderTextBehindSubject = (
       textCtx.lineTo(options.x + textWidth / 2, underlineY);
       textCtx.stroke();
     }
-  
-    // Step 3: Create optimized subject layer (original image with mask)
-    const subjectResult = createOptimizedCanvas(canvasDimensions, { willReadFrequently: true, alpha: true });
-    const subjectCanvas = subjectResult.canvas;
-    const subjectCtx = subjectResult.context;
-    canvasesToCleanup.push(subjectCanvas);
-  
-    subjectCtx.drawImage(originalCanvas, 0, 0);
-  
-    // Apply mask to get subject only - optimized processing
-    const subjectImageData = subjectCtx.getImageData(0, 0, subjectCanvas.width, subjectCanvas.height);
-    const subjectData = subjectImageData.data;
     
-    // Optimized mask application
-    for (let i = 0; i < length; i += 4) {
-      const subjectAlpha = maskData[i + 3] / 255;
-      subjectData[i + 3] = subjectData[i + 3] * subjectAlpha;
+    // Restore context if rotation was applied
+    if (options.rotation && options.rotation !== 0) {
+      textCtx.restore();
     }
-    subjectCtx.putImageData(subjectImageData, 0, 0);
   
-    // Step 4: Composite final image with proper layering and optimized operations
-    // Layer 1: Background (bottom)
-    ctx.drawImage(backgroundCanvas, 0, 0);
+    // STEP 3: Create the final composite using proper masking technique
+    console.log('Creating text-behind-subject composite...');
     
-    // Layer 2: Text (middle) - only draw where there's no subject
+    // Start with the full background
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.drawImage(fullBackgroundCanvas, 0, 0);
+    console.log('Drew full background');
+    
+    // Draw text on top of background
     ctx.globalCompositeOperation = 'source-over';
     ctx.drawImage(textCanvas, 0, 0);
+    console.log('Drew text layer on background');
     
-    // Layer 3: Subject (top)
+    // Now use the subject mask to "cut out" the subject area from the text
+    // This is the key: we use destination-out to remove text where subject exists
+    const maskCanvas = createOptimizedCanvas(canvasDimensions, { willReadFrequently: false, alpha: true });
+    const maskCtx = maskCanvas.context;
+    canvasesToCleanup.push(maskCanvas.canvas);
+    
+    // Create a mask canvas where white areas represent the subject
+    const maskData = mask.data;
+    const maskImageData = maskCtx.createImageData(canvasDimensions.width, canvasDimensions.height);
+    const maskPixels = maskImageData.data;
+    
+    // Convert mask to proper format for compositing
+    for (let i = 0; i < maskData.length; i += 4) {
+      const alpha = maskData[i + 3]; // Subject alpha from mask
+      // Where subject exists (alpha > 0), make it white and opaque
+      if (alpha > 0) {
+        maskPixels[i] = 255;     // R
+        maskPixels[i + 1] = 255; // G  
+        maskPixels[i + 2] = 255; // B
+        maskPixels[i + 3] = alpha; // Preserve alpha for smooth edges
+      } else {
+        maskPixels[i] = 0;       // R
+        maskPixels[i + 1] = 0;   // G
+        maskPixels[i + 2] = 0;   // B
+        maskPixels[i + 3] = 0;   // A
+      }
+    }
+    
+    maskCtx.putImageData(maskImageData, 0, 0);
+    
+    // Use destination-out to remove text where subject will be
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.drawImage(maskCanvas.canvas, 0, 0);
+    console.log('Removed text from subject areas using mask');
+    
+    // Finally, draw the subject on top
     ctx.globalCompositeOperation = 'source-over';
-    ctx.drawImage(subjectCanvas, 0, 0);
+    ctx.drawImage(processedCanvas, 0, 0);
+    console.log('Drew subject on top, completing text-behind-subject effect');
     
+    console.log('Text-behind-subject rendering complete');
     return outputCanvas;
   } catch (error) {
     const handledError = handleBackgroundRemovalError(

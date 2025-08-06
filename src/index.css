@@ -1,3 +1,5 @@
+@import url('./styles/mobile-performance.css');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -48,67 +50,783 @@ All colors MUST be HSL.
     --gradient-primary: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 42%));
     --gradient-accent: linear-gradient(135deg, hsl(262 83% 58%), hsl(262 83% 65%));
     --gradient-surface: linear-gradient(145deg, hsl(210 11% 16%), hsl(210 11% 20%));
+
+    /* Mobile-specific design tokens */
+    --mobile-background: 210 11% 11%;
+    --mobile-surface: 210 11% 14%;
+    --mobile-surface-elevated: 210 11% 16%;
+    --mobile-surface-float: 210 11% 18%;
+    --mobile-accent: 174 72% 56%;
+    --mobile-accent-secondary: 262 83% 58%;
+    --mobile-text-primary: 210 20% 95%;
+    --mobile-text-secondary: 210 15% 75%;
+    --mobile-text-subtle: 210 10% 60%;
+    --mobile-border: 210 11% 25%;
+    --mobile-border-subtle: 210 11% 20%;
+
+    /* Glass morphism variables */
+    --glass-background: rgba(25, 25, 25, 0.85);
+    --glass-background-strong: rgba(25, 25, 25, 0.95);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    --glass-backdrop-filter: blur(20px) saturate(180%);
+
+    /* Mobile typography scale */
+    --mobile-text-xs: 0.75rem;
+    --mobile-text-sm: 0.875rem;
+    --mobile-text-base: 1rem;
+    --mobile-text-lg: 1.125rem;
+    --mobile-text-xl: 1.25rem;
+    --mobile-text-2xl: 1.5rem;
+    --mobile-text-3xl: 1.875rem;
+
+    /* Mobile spacing scale */
+    --mobile-space-1: 0.25rem;
+    --mobile-space-2: 0.5rem;
+    --mobile-space-3: 0.75rem;
+    --mobile-space-4: 1rem;
+    --mobile-space-5: 1.25rem;
+    --mobile-space-6: 1.5rem;
+    --mobile-space-8: 2rem;
+    --mobile-space-10: 2.5rem;
+    --mobile-space-12: 3rem;
+    --mobile-space-16: 4rem;
+
+    /* Mobile touch targets */
+    --mobile-touch-target-sm: 40px;
+    --mobile-touch-target-md: 44px;
+    --mobile-touch-target-lg: 48px;
+
+    /* Mobile animation durations */
+    --mobile-duration-fast: 0.15s;
+    --mobile-duration-normal: 0.25s;
+    --mobile-duration-slow: 0.4s;
+    --mobile-duration-panel: 0.3s;
+
+    /* Mobile easing functions */
+    --mobile-ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+    --mobile-ease-in-out: cubic-bezier(0.4, 0, 0.6, 1);
+    --mobile-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --mobile-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+    /* Mobile shadows */
+    --mobile-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+    --mobile-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.2);
+    --mobile-shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --mobile-shadow-xl: 0 16px 64px rgba(0, 0, 0, 0.4);
+    --mobile-shadow-glow: 0 0 20px rgba(32, 178, 170, 0.3);
+
+    /* Mobile gradients */
+    --mobile-gradient-primary: linear-gradient(135deg, hsl(174 72% 56%) 0%, hsl(174 72% 62%) 100%);
+    --mobile-gradient-accent: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(262 83% 65%) 100%);
+    --mobile-gradient-surface: linear-gradient(145deg, hsl(210 11% 14%) 0%, hsl(210 11% 18%) 100%);
+    --mobile-gradient-glass: linear-gradient(145deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
     
-    --shadow-soft: 0 4px 20px -4px hsl(210 11% 5% / 0.4);
-    --shadow-float: 0 8px 32px -8px hsl(210 11% 5% / 0.6);
-    --shadow-glow: 0 0 40px hsl(142 76% 36% / 0.15);
+    /* Enhanced mobile gradients for theming */
+    --mobile-gradient-button: linear-gradient(135deg, hsl(174 72% 56%) 0%, hsl(174 72% 48%) 50%, hsl(174 72% 62%) 100%);
+    --mobile-gradient-panel: linear-gradient(180deg, rgba(25, 25, 25, 0.98) 0%, rgba(25, 25, 25, 0.95) 100%);
+    --mobile-gradient-header: linear-gradient(180deg, rgba(25, 25, 25, 0.95) 0%, rgba(25, 25, 25, 0.85) 100%);
+    --mobile-gradient-overlay: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 50%, rgba(0, 0, 0, 0.1) 100%);
+    
+    /* Mobile color scheme variations */
+    --mobile-accent-light: 174 72% 65%;
+    --mobile-accent-dark: 174 72% 45%;
+    --mobile-accent-muted: 174 30% 50%;
+    --mobile-success: 142 76% 56%;
+    --mobile-warning: 45 93% 58%;
+    --mobile-error: 0 84% 60%;
+    --mobile-info: 217 91% 60%;
+    
+    /* Enhanced glass morphism variables */
+    --glass-background-light: rgba(255, 255, 255, 0.08);
+    --glass-background-medium: rgba(25, 25, 25, 0.90);
+    --glass-background-heavy: rgba(25, 25, 25, 0.98);
+    --glass-border-light: rgba(255, 255, 255, 0.08);
+    --glass-border-medium: rgba(255, 255, 255, 0.12);
+    --glass-border-heavy: rgba(255, 255, 255, 0.16);
+    --glass-shadow-light: 0 4px 16px rgba(0, 0, 0, 0.2);
+    --glass-shadow-medium: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --glass-shadow-heavy: 0 16px 64px rgba(0, 0, 0, 0.4);
+    --glass-backdrop-light: blur(12px) saturate(150%);
+    --glass-backdrop-medium: blur(20px) saturate(180%);
+    --glass-backdrop-heavy: blur(32px) saturate(200%);
+    
+    /* Mobile typography enhancements */
+    --mobile-font-weight-light: 300;
+    --mobile-font-weight-normal: 400;
+    --mobile-font-weight-medium: 500;
+    --mobile-font-weight-semibold: 600;
+    --mobile-font-weight-bold: 700;
+    --mobile-line-height-tight: 1.25;
+    --mobile-line-height-normal: 1.5;
+    --mobile-line-height-relaxed: 1.75;
+    --mobile-letter-spacing-tight: -0.025em;
+    --mobile-letter-spacing-normal: 0em;
+    --mobile-letter-spacing-wide: 0.025em;
+    
+    /* Mobile interaction states */
+    --mobile-state-hover: rgba(32, 178, 170, 0.1);
+    --mobile-state-active: rgba(32, 178, 170, 0.2);
+    --mobile-state-focus: rgba(32, 178, 170, 0.15);
+    --mobile-state-disabled: rgba(255, 255, 255, 0.05);
+    
+    /* Mobile component sizing */
+    --mobile-button-height-sm: 36px;
+    --mobile-button-height-md: 44px;
+    --mobile-button-height-lg: 52px;
+    --mobile-input-height-sm: 40px;
+    --mobile-input-height-md: 44px;
+    --mobile-input-height-lg: 48px;
+    --mobile-panel-width: 100vw;
+    --mobile-panel-max-height: 85vh;
+    --mobile-header-height: 60px;
+    --mobile-dock-height: 80px;
+    
+    /* Mobile border radius scale */
+    --mobile-radius-xs: 4px;
+    --mobile-radius-sm: 6px;
+    --mobile-radius-md: 8px;
+    --mobile-radius-lg: 12px;
+    --mobile-radius-xl: 16px;
+    --mobile-radius-2xl: 20px;
+    --mobile-radius-full: 9999px;
+  }
+}
 
-    --radius: 0.75rem;
+/* Screen reader only content - globally available */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+/* Responsive breakpoint utilities */
+@layer utilities {
+  /* Mobile-first responsive container */
+  .responsive-container {
+    width: 100%;
+    min-height: 100vh;
+    transition: all var(--mobile-duration-normal) var(--mobile-ease-out);
   }
 
-  .dark {
-    /* Enhanced dark mode (keeping the same as root since we're dark-first) */
-    --background: 210 11% 12%;
-    --foreground: 210 20% 92%;
+  /* Device-specific layouts */
+  .mobile-layout {
+    overflow-x: hidden;
+    background-color: hsl(var(--mobile-background));
+    color: hsl(var(--mobile-text-primary));
+  }
 
-    --card: 210 11% 15%;
-    --card-foreground: 210 20% 92%;
+  .desktop-layout {
+    overflow: auto;
+  }
 
-    --popover: 210 11% 15%;
-    --popover-foreground: 210 20% 92%;
+  /* Orientation-specific styles */
+  .portrait-mode {
+    --orientation-multiplier: 1;
+    --mobile-panel-height: 70vh;
+  }
 
-    --primary: 142 76% 36%;
-    --primary-foreground: 210 11% 12%;
+  .landscape-mode {
+    --orientation-multiplier: 0.8;
+    --mobile-panel-height: 80vh;
+  }
 
-    --secondary: 210 11% 18%;
-    --secondary-foreground: 210 20% 85%;
+  /* Device type specific styles */
+  .device-mobile-sm {
+    --device-scale: 0.9;
+    --touch-target-size: var(--mobile-touch-target-lg);
+    --mobile-text-scale: 0.9;
+    --mobile-spacing-scale: 0.9;
+  }
 
-    --muted: 210 11% 18%;
-    --muted-foreground: 210 10% 65%;
+  .device-mobile-md {
+    --device-scale: 1;
+    --touch-target-size: var(--mobile-touch-target-md);
+    --mobile-text-scale: 1;
+    --mobile-spacing-scale: 1;
+  }
 
-    --accent: 262 83% 58%;
-    --accent-foreground: 210 11% 12%;
+  .device-tablet {
+    --device-scale: 1.1;
+    --touch-target-size: var(--mobile-touch-target-sm);
+    --mobile-text-scale: 1.1;
+    --mobile-spacing-scale: 1.1;
+  }
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+  .device-desktop {
+    --device-scale: 1;
+    --touch-target-size: 36px;
+    --mobile-text-scale: 1;
+    --mobile-spacing-scale: 1;
+  }
 
-    --border: 210 11% 22%;
-    --input: 210 11% 18%;
-    --ring: 142 76% 36%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+  /* Mobile glass morphism utilities */
+  .glass-panel {
+    background: var(--glass-background);
+    backdrop-filter: var(--glass-backdrop-filter);
+    -webkit-backdrop-filter: var(--glass-backdrop-filter);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-panel-strong {
+    background: var(--glass-background-strong);
+    backdrop-filter: var(--glass-backdrop-filter);
+    -webkit-backdrop-filter: var(--glass-backdrop-filter);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  /* Mobile animation utilities */
+  .animate-mobile-slide-up {
+    animation: mobile-slide-up var(--mobile-duration-panel) var(--mobile-ease-out);
+  }
+
+  .animate-mobile-slide-down {
+    animation: mobile-slide-down var(--mobile-duration-panel) var(--mobile-ease-out);
+  }
+
+  .animate-mobile-fade-in {
+    animation: mobile-fade-in var(--mobile-duration-normal) var(--mobile-ease-out);
+  }
+
+  .animate-mobile-bounce {
+    animation: mobile-bounce 0.6s var(--mobile-ease-bounce);
+  }
+
+  .animate-mobile-pulse {
+    animation: mobile-pulse 1.5s var(--mobile-ease-in-out) infinite;
+  }
+
+  .animate-mobile-glow {
+    animation: mobile-glow 2s var(--mobile-ease-in-out) infinite;
+  }
+
+  /* Mobile touch feedback utilities */
+  .touch-feedback {
+    transition: transform var(--mobile-duration-fast) var(--mobile-ease-out);
+  }
+
+  .touch-feedback:active {
+    transform: scale(0.95);
+  }
+
+  .touch-feedback-strong:active {
+    transform: scale(0.9);
+  }
+
+  /* Mobile typography utilities */
+  .mobile-text-xs { font-size: calc(var(--mobile-text-xs) * var(--mobile-text-scale, 1)); }
+  .mobile-text-sm { font-size: calc(var(--mobile-text-sm) * var(--mobile-text-scale, 1)); }
+  .mobile-text-base { font-size: calc(var(--mobile-text-base) * var(--mobile-text-scale, 1)); }
+  .mobile-text-lg { font-size: calc(var(--mobile-text-lg) * var(--mobile-text-scale, 1)); }
+  .mobile-text-xl { font-size: calc(var(--mobile-text-xl) * var(--mobile-text-scale, 1)); }
+  .mobile-text-2xl { font-size: calc(var(--mobile-text-2xl) * var(--mobile-text-scale, 1)); }
+  .mobile-text-3xl { font-size: calc(var(--mobile-text-3xl) * var(--mobile-text-scale, 1)); }
+
+  /* Mobile spacing utilities */
+  .mobile-p-1 { padding: calc(var(--mobile-space-1) * var(--mobile-spacing-scale, 1)); }
+  .mobile-p-2 { padding: calc(var(--mobile-space-2) * var(--mobile-spacing-scale, 1)); }
+  .mobile-p-3 { padding: calc(var(--mobile-space-3) * var(--mobile-spacing-scale, 1)); }
+  .mobile-p-4 { padding: calc(var(--mobile-space-4) * var(--mobile-spacing-scale, 1)); }
+  .mobile-p-5 { padding: calc(var(--mobile-space-5) * var(--mobile-spacing-scale, 1)); }
+  .mobile-p-6 { padding: calc(var(--mobile-space-6) * var(--mobile-spacing-scale, 1)); }
+  .mobile-p-8 { padding: calc(var(--mobile-space-8) * var(--mobile-spacing-scale, 1)); }
+
+  .mobile-m-1 { margin: calc(var(--mobile-space-1) * var(--mobile-spacing-scale, 1)); }
+  .mobile-m-2 { margin: calc(var(--mobile-space-2) * var(--mobile-spacing-scale, 1)); }
+  .mobile-m-3 { margin: calc(var(--mobile-space-3) * var(--mobile-spacing-scale, 1)); }
+  .mobile-m-4 { margin: calc(var(--mobile-space-4) * var(--mobile-spacing-scale, 1)); }
+  .mobile-m-5 { margin: calc(var(--mobile-space-5) * var(--mobile-spacing-scale, 1)); }
+  .mobile-m-6 { margin: calc(var(--mobile-space-6) * var(--mobile-spacing-scale, 1)); }
+  .mobile-m-8 { margin: calc(var(--mobile-space-8) * var(--mobile-spacing-scale, 1)); }
+
+  /* Mobile color utilities */
+  .mobile-bg-primary { background-color: hsl(var(--mobile-background)); }
+  .mobile-bg-surface { background-color: hsl(var(--mobile-surface)); }
+  .mobile-bg-surface-elevated { background-color: hsl(var(--mobile-surface-elevated)); }
+  .mobile-bg-surface-float { background-color: hsl(var(--mobile-surface-float)); }
+  .mobile-bg-accent { background-color: hsl(var(--mobile-accent)); }
+  .mobile-bg-accent-light { background-color: hsl(var(--mobile-accent-light)); }
+  .mobile-bg-accent-dark { background-color: hsl(var(--mobile-accent-dark)); }
+  .mobile-bg-success { background-color: hsl(var(--mobile-success)); }
+  .mobile-bg-warning { background-color: hsl(var(--mobile-warning)); }
+  .mobile-bg-error { background-color: hsl(var(--mobile-error)); }
+
+  .mobile-text-primary { color: hsl(var(--mobile-text-primary)); }
+  .mobile-text-secondary { color: hsl(var(--mobile-text-secondary)); }
+  .mobile-text-subtle { color: hsl(var(--mobile-text-subtle)); }
+  .mobile-text-accent { color: hsl(var(--mobile-accent)); }
+  .mobile-text-accent-light { color: hsl(var(--mobile-accent-light)); }
+  .mobile-text-success { color: hsl(var(--mobile-success)); }
+  .mobile-text-warning { color: hsl(var(--mobile-warning)); }
+  .mobile-text-error { color: hsl(var(--mobile-error)); }
+
+  .mobile-border { border-color: hsl(var(--mobile-border)); }
+  .mobile-border-subtle { border-color: hsl(var(--mobile-border-subtle)); }
+  
+  /* Enhanced glass morphism utilities */
+  .glass-light {
+    background: var(--glass-background-light);
+    backdrop-filter: var(--glass-backdrop-light);
+    -webkit-backdrop-filter: var(--glass-backdrop-light);
+    border: 1px solid var(--glass-border-light);
+    box-shadow: var(--glass-shadow-light);
+  }
+  
+  .glass-medium {
+    background: var(--glass-background-medium);
+    backdrop-filter: var(--glass-backdrop-medium);
+    -webkit-backdrop-filter: var(--glass-backdrop-medium);
+    border: 1px solid var(--glass-border-medium);
+    box-shadow: var(--glass-shadow-medium);
+  }
+  
+  .glass-heavy {
+    background: var(--glass-background-heavy);
+    backdrop-filter: var(--glass-backdrop-heavy);
+    -webkit-backdrop-filter: var(--glass-backdrop-heavy);
+    border: 1px solid var(--glass-border-heavy);
+    box-shadow: var(--glass-shadow-heavy);
+  }
+  
+  /* Mobile gradient utilities */
+  .mobile-gradient-primary { background: var(--mobile-gradient-primary); }
+  .mobile-gradient-accent { background: var(--mobile-gradient-accent); }
+  .mobile-gradient-surface { background: var(--mobile-gradient-surface); }
+  .mobile-gradient-button { background: var(--mobile-gradient-button); }
+  .mobile-gradient-panel { background: var(--mobile-gradient-panel); }
+  .mobile-gradient-header { background: var(--mobile-gradient-header); }
+  .mobile-gradient-overlay { background: var(--mobile-gradient-overlay); }
+  
+  /* Mobile border radius utilities */
+  .mobile-rounded-xs { border-radius: var(--mobile-radius-xs); }
+  .mobile-rounded-sm { border-radius: var(--mobile-radius-sm); }
+  .mobile-rounded-md { border-radius: var(--mobile-radius-md); }
+  .mobile-rounded-lg { border-radius: var(--mobile-radius-lg); }
+  .mobile-rounded-xl { border-radius: var(--mobile-radius-xl); }
+  .mobile-rounded-2xl { border-radius: var(--mobile-radius-2xl); }
+  .mobile-rounded-full { border-radius: var(--mobile-radius-full); }
+  
+  /* Mobile animation utilities */
+  .animate-mobile-glass-shimmer { animation: mobile-glass-shimmer 2s linear infinite; }
+  .animate-mobile-button-press { animation: mobile-button-press 0.15s var(--mobile-ease-out); }
+  .animate-mobile-panel-slide-in { animation: mobile-panel-slide-in var(--mobile-duration-panel) var(--mobile-ease-out); }
+  .animate-mobile-panel-slide-out { animation: mobile-panel-slide-out var(--mobile-duration-panel) var(--mobile-ease-out); }
+  .animate-mobile-dock-float { animation: mobile-dock-float 3s var(--mobile-ease-in-out) infinite; }
+  .animate-mobile-status-pulse { animation: mobile-status-pulse 2s var(--mobile-ease-in-out) infinite; }
+  .animate-mobile-loading-dots { animation: mobile-loading-dots 1.4s var(--mobile-ease-in-out) infinite; }
+  .animate-mobile-success-check { animation: mobile-success-check 0.6s var(--mobile-ease-out); }
+  .animate-mobile-error-shake { animation: mobile-error-shake 0.5s var(--mobile-ease-out); }
+  .animate-mobile-zoom-in { animation: mobile-zoom-in var(--mobile-duration-normal) var(--mobile-ease-out); }
+  .animate-mobile-zoom-out { animation: mobile-zoom-out var(--mobile-duration-normal) var(--mobile-ease-out); }
+  .animate-mobile-slide-left { animation: mobile-slide-left var(--mobile-duration-normal) var(--mobile-ease-out); }
+  .animate-mobile-slide-right { animation: mobile-slide-right var(--mobile-duration-normal) var(--mobile-ease-out); }
+  .animate-mobile-controls-entrance { animation: mobile-controls-entrance var(--mobile-duration-slow) var(--mobile-ease-out); }
+  .animate-mobile-controls-exit { animation: mobile-controls-exit var(--mobile-duration-normal) var(--mobile-ease-out); }
+  .animate-mobile-button-stagger { animation: mobile-button-stagger var(--mobile-duration-normal) var(--mobile-ease-out); }
+  
+  /* Mobile interaction state utilities */
+  .mobile-hover:hover { background-color: var(--mobile-state-hover); }
+  .mobile-active:active { background-color: var(--mobile-state-active); }
+  .mobile-focus:focus { background-color: var(--mobile-state-focus); }
+  .mobile-disabled:disabled { background-color: var(--mobile-state-disabled); opacity: 0.5; cursor: not-allowed; }
+  
+  /* Mobile typography utilities */
+  .mobile-font-light { font-weight: var(--mobile-font-weight-light); }
+  .mobile-font-normal { font-weight: var(--mobile-font-weight-normal); }
+  .mobile-font-medium { font-weight: var(--mobile-font-weight-medium); }
+  .mobile-font-semibold { font-weight: var(--mobile-font-weight-semibold); }
+  .mobile-font-bold { font-weight: var(--mobile-font-weight-bold); }
+  
+  .mobile-leading-tight { line-height: var(--mobile-line-height-tight); }
+  .mobile-leading-normal { line-height: var(--mobile-line-height-normal); }
+  .mobile-leading-relaxed { line-height: var(--mobile-line-height-relaxed); }
+  
+  .mobile-tracking-tight { letter-spacing: var(--mobile-letter-spacing-tight); }
+  .mobile-tracking-normal { letter-spacing: var(--mobile-letter-spacing-normal); }
+  .mobile-tracking-wide { letter-spacing: var(--mobile-letter-spacing-wide); }
+}
+
+/* Body classes for orientation and device targeting */
+body.orientation-portrait {
+  --viewport-orientation: portrait;
+}
+
+body.orientation-landscape {
+  --viewport-orientation: landscape;
+}
+
+body.device-mobile-sm,
+body.device-mobile-md {
+  /* Mobile-specific optimizations */
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body.device-tablet {
+  /* Tablet-specific optimizations */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Responsive breakpoint media queries */
+@media (max-width: 479px) {
+  .responsive-container {
+    --current-breakpoint: mobile-sm;
+  }
+}
+
+@media (min-width: 480px) and (max-width: 767px) {
+  .responsive-container {
+    --current-breakpoint: mobile-md;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .responsive-container {
+    --current-breakpoint: tablet;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .responsive-container {
+    --current-breakpoint: tablet-lg;
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-container {
+    --current-breakpoint: desktop;
+  }
+}
+
+/* Orientation-specific media queries */
+@media (orientation: portrait) {
+  .responsive-container {
+    --current-orientation: portrait;
+  }
+  
+  /* Portrait-specific adjustments */
+  .mobile-layout {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
+@media (orientation: landscape) {
+  .responsive-container {
+    --current-orientation: landscape;
+  }
+  
+  /* Landscape-specific adjustments */
+  .mobile-layout {
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+  }
+}
+
+/* Safe area handling for mobile devices */
+@supports (padding: env(safe-area-inset-top)) {
+  .mobile-layout {
+    padding-top: env(safe-area-inset-top, 0);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
+  }
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .responsive-container {
+    --pixel-density: high;
+  }
+}
+
+/* Mobile-specific keyframe animations */
+@keyframes mobile-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-slide-down {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+@keyframes mobile-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes mobile-bounce {
+  0%, 20%, 53%, 80%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  40%, 43% {
+    transform: translate3d(0, -8px, 0) scale(1.02);
+  }
+  70% {
+    transform: translate3d(0, -4px, 0) scale(1.01);
+  }
+  90% {
+    transform: translate3d(0, -2px, 0) scale(1.005);
+  }
+}
+
+@keyframes mobile-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes mobile-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(32, 178, 170, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(32, 178, 170, 0.4);
+  }
+}
+
+@keyframes mobile-ripple {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes mobile-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-2px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(2px);
+  }
+}
+
+
+
+@keyframes mobile-glass-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes mobile-button-press {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes mobile-panel-slide-in {
+  0% {
+    transform: translateY(100%) scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-panel-slide-out {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100%) scale(0.95);
+    opacity: 0;
+  }
+}
+
+@keyframes mobile-dock-float {
+  0%, 100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-2px);
+  }
+}
+
+@keyframes mobile-status-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(32, 178, 170, 0.4);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+    box-shadow: 0 0 0 8px rgba(32, 178, 170, 0);
+  }
+}
+
+@keyframes mobile-loading-dots {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-success-check {
+  0% {
+    stroke-dasharray: 0 100;
+  }
+  100% {
+    stroke-dasharray: 100 0;
+  }
+}
+
+@keyframes mobile-error-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes mobile-zoom-in {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-zoom-out {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes mobile-slide-left {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-slide-right {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-controls-entrance {
+  0% {
+    transform: translateX(-50%) translateY(100px) scale(0.8);
+    opacity: 0;
+  }
+  60% {
+    transform: translateX(-50%) translateY(-10px) scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mobile-controls-exit {
+  0% {
+    transform: translateX(-50%) translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-50%) translateY(100px) scale(0.8);
+    opacity: 0;
+  }
+}
+
+@keyframes mobile-button-stagger {
+  0% {
+    transform: translateY(20px) scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .responsive-container,
+  .responsive-container * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -120,4 +838,154 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+/* Perpl
+exity Hero Animations */
+@keyframes backgroundFloat {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.3; }
+  25% { transform: translateY(-20px) rotate(90deg); opacity: 0.6; }
+  50% { transform: translateY(-40px) rotate(180deg); opacity: 0.3; }
+  75% { transform: translateY(-20px) rotate(270deg); opacity: 0.6; }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes textGlow {
+  0%, 100% { text-shadow: 0 0 5px rgba(32, 128, 141, 0.3); }
+  50% { text-shadow: 0 0 15px rgba(32, 128, 141, 0.5), 0 0 20px rgba(32, 128, 141, 0.3); }
+}
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.8); }
+}
+
+@keyframes searchPulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+@keyframes pillFloat {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes iconBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+  100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* Animation delay utilities */
+.animate-delay-0 { animation-delay: 0s; }
+.animate-delay-[0.1s] { animation-delay: 0.1s; }
+.animate-delay-[0.2s] { animation-delay: 0.2s; }
+.animate-delay-[0.3s] { animation-delay: 0.3s; }
+.animate-delay-[3s] { animation-delay: 3s; }
+.animate-delay-[6s] { animation-delay: 6s; }
+.animate-delay-[9s] { animation-delay: 9s; }
+
+/* Navbar scroll effect */
+.scrolled {
+  background: rgba(28, 30, 30, 0.95) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* 3D transform utilities */
+.rotate-x-\[5deg\] { transform: perspective(1000px) rotateX(5deg) rotateY(-5deg); }
+.rotate-x-0 { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+.rotate-y-\[-5deg\] { transform: perspective(1000px) rotateX(5deg) rotateY(-5deg); }
+.rotate-y-0 { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+.perspective-\[1000px\] { perspective: 1000px; }/* P
+erplexity Hero Component Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) translateX(0px);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translateY(-20px) translateX(10px);
+    opacity: 0.6;
+  }
+  66% {
+    transform: translateY(10px) translateX(-5px);
+    opacity: 0.4;
+  }
+}
+
+/* Animation utility classes */
+.animate-fadeInUp {
+  animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.animate-slideInLeft {
+  animation: slideInLeft 0.8s ease-out forwards;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.8s ease-out forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

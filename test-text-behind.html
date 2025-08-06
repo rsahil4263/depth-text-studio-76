@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Behind Subject Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        canvas {
+            border: 1px solid #ccc;
+            margin: 10px 0;
+        }
+        .explanation {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text Behind Subject Effect - Test Results</h1>
+        
+        <div class="explanation">
+            <h3>How the Text-Behind-Subject Effect Should Work:</h3>
+            <ol>
+                <li><strong>Background Layer:</strong> The original image background (areas where the subject was removed)</li>
+                <li><strong>Text Layer:</strong> Your text placed in the middle layer</li>
+                <li><strong>Subject Layer:</strong> The subject (person/object) on top, covering parts of the text</li>
+            </ol>
+            <p>This creates the illusion that the text is positioned behind the subject in 3D space.</p>
+        </div>
+
+        <div class="test-section">
+            <h2>Test 1: Layer Composition Visualization</h2>
+            <p>This shows how the layers should be composed:</p>
+            
+            <h4>Layer 1: Background Only</h4>
+            <canvas id="backgroundCanvas" width="400" height="300"></canvas>
+            
+            <h4>Layer 2: Background + Text</h4>
+            <canvas id="backgroundTextCanvas" width="400" height="300"></canvas>
+            
+            <h4>Layer 3: Final Result (Background + Text + Subject)</h4>
+            <canvas id="finalCanvas" width="400" height="300"></canvas>
+        </div>
+
+        <div class="test-section">
+            <h2>Expected vs Actual Results</h2>
+            <p><strong>Expected:</strong> Text appears to go behind the subject, creating depth</p>
+            <p><strong>Previous Issue:</strong> Text was appearing on top of the subject</p>
+            <p><strong>Fix Applied:</strong> Corrected layer composition order and mask application</p>
+        </div>
+    </div>
+
+    <script>
+        // Simple visualization of how the layers should work
+        function drawTestLayers() {
+            // Background layer
+            const bgCanvas = document.getElementById('backgroundCanvas');
+            const bgCtx = bgCanvas.getContext('2d');
+            
+            // Draw a simple background
+            const gradient = bgCtx.createLinearGradient(0, 0, 400, 300);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(1, '#98FB98');
+            bgCtx.fillStyle = gradient;
+            bgCtx.fillRect(0, 0, 400, 300);
+            
+            // Add some background elements
+            bgCtx.fillStyle = '#FFD700';
+            bgCtx.beginPath();
+            bgCtx.arc(350, 50, 30, 0, Math.PI * 2);
+            bgCtx.fill();
+            
+            // Background + Text layer
+            const btCanvas = document.getElementById('backgroundTextCanvas');
+            const btCtx = btCanvas.getContext('2d');
+            
+            // Copy background
+            btCtx.drawImage(bgCanvas, 0, 0);
+            
+            // Add text
+            btCtx.font = 'bold 48px Arial';
+            btCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            btCtx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+            btCtx.lineWidth = 2;
+            btCtx.textAlign = 'center';
+            btCtx.strokeText('BEHIND', 200, 150);
+            btCtx.fillText('BEHIND', 200, 150);
+            
+            // Final layer (with subject)
+            const finalCanvas = document.getElementById('finalCanvas');
+            const finalCtx = finalCanvas.getContext('2d');
+            
+            // Copy background + text
+            finalCtx.drawImage(btCanvas, 0, 0);
+            
+            // Draw a simple subject (person silhouette)
+            finalCtx.fillStyle = '#8B4513';
+            finalCtx.fillRect(180, 100, 40, 150); // body
+            finalCtx.fillStyle = '#DEB887';
+            finalCtx.beginPath();
+            finalCtx.arc(200, 80, 25, 0, Math.PI * 2); // head
+            finalCtx.fill();
+            
+            // Arms
+            finalCtx.fillStyle = '#8B4513';
+            finalCtx.fillRect(160, 120, 20, 80);
+            finalCtx.fillRect(220, 120, 20, 80);
+        }
+        
+        // Draw the test visualization
+        drawTestLayers();
+    </script>
+</body>
+</html>

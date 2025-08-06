@@ -20,7 +20,7 @@ export interface BackgroundRemovalResult {
  */
 export interface BackgroundRemovalOptions {
   /** Optional progress callback for processing updates */
-  onProgress?: (step: string, progress: number) => void;
+  onProgress?: (progress: number) => void;
 }
 
 /**
@@ -76,7 +76,9 @@ export class ImglyBackgroundRemovalService implements BackgroundRemovalService {
       }
       
       // Process the image with @imgly/background-removal
-      const foregroundBlob = await removeBackground(imageSource);
+      const foregroundBlob = await removeBackground(imageSource, {
+        progress: options?.onProgress
+      });
       
       console.log('Background removal completed successfully');
       

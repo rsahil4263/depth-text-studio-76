@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Avatar Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1F2121;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: white;
+        }
+        .test-container {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            background: #2a2a2a;
+            border: 2px solid #444;
+            border-radius: 8px;
+            margin: 20px auto;
+        }
+        .test-label {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+        .instructions {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #333;
+            border-radius: 8px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-label">User Avatar Component Test</div>
+    
+    <div class="test-container">
+        <!-- This simulates the canvas container where the UserAvatar should appear -->
+        <div style="position: absolute; top: 16px; left: 16px; z-index: 100;">
+            <button style="
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #20B2AA, #4FD1C7);
+                border: none;
+                cursor: pointer;
+                position: relative;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            " onclick="alert('Avatar clicked! This will open the user menu in the actual component.')">
+                <div style="
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    background: #ffffff;
+                    opacity: 0.9;
+                "></div>
+            </button>
+        </div>
+        
+        <div style="
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: #888;
+        ">
+            <div style="font-size: 48px; margin-bottom: 16px;">🖼️</div>
+            <div>Preview Canvas Area</div>
+            <div style="font-size: 14px; margin-top: 8px;">The avatar appears in the top-left corner</div>
+        </div>
+    </div>
+    
+    <div class="instructions">
+        <h3>✅ UserAvatar Component Successfully Updated!</h3>
+        <p><strong>Latest changes:</strong></p>
+        <ul>
+            <li>🔧 Moved UserAvatar to the main viewport container</li>
+            <li>👁️ Avatar now visible even when no image is loaded</li>
+            <li>📱 Updated both desktop and mobile versions</li>
+            <li>🎯 Fixed positioning to always show in top-left corner</li>
+        </ul>
+        
+        <p><strong>What was implemented:</strong></p>
+        <ul>
+            <li>Created <code>UserAvatar.tsx</code> component with Perplexity-style design</li>
+            <li>Added <code>UserAvatar.module.css</code> with complete styling</li>
+            <li>Integrated the component into both <code>HtmlImageEditor</code> and <code>MobileImageEditor</code></li>
+            <li>Positioned the avatar in the top-left corner of the preview canvas</li>
+        </ul>
+        
+        <p><strong>Features included:</strong></p>
+        <ul>
+            <li>🎨 Gradient avatar button with hover effects</li>
+            <li>📱 Responsive design for mobile and desktop</li>
+            <li>🎯 Modal popup with user menu</li>
+            <li>📋 Complete menu items (Profile, Settings, Help, etc.)</li>
+            <li>🔧 Help dropdown with submenu</li>
+            <li>⌨️ Keyboard navigation (Escape to close)</li>
+            <li>🖱️ Click outside to close functionality</li>
+        </ul>
+        
+        <p><strong>To test in your app:</strong></p>
+        <ol>
+            <li>Visit <a href="http://localhost:8081" target="_blank" style="color: #20B2AA;">http://localhost:8081</a></li>
+            <li>Upload an image to see the preview canvas</li>
+            <li>Look for the teal gradient avatar in the top-left corner</li>
+            <li>Click the avatar to open the user menu</li>
+        </ol>
+    </div>
+</body>
+</html>

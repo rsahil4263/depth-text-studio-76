@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Mobile Dock Alignment Test</title>
+    <style>
+        :root {
+            --mobile-space-1: 0.25rem;
+            --mobile-space-2: 0.5rem;
+            --mobile-space-3: 0.75rem;
+            --mobile-space-4: 1rem;
+            --mobile-space-5: 1.25rem;
+            --mobile-radius-2xl: 1rem;
+            --glass-background-heavy: rgba(255, 255, 255, 0.1);
+            --glass-border-medium: rgba(255, 255, 255, 0.2);
+            --glass-backdrop-heavy: blur(20px);
+            --glass-shadow-heavy: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .test-content {
+            padding: 20px;
+            color: white;
+            text-align: center;
+            padding-top: 60px;
+        }
+
+        .alignment-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .center-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: rgba(255, 0, 0, 0.5);
+            transform: translateX(-50%);
+        }
+
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Mobile dock styles - copied from the actual component */
+        .controlDock {
+            position: fixed;
+            bottom: calc(var(--mobile-space-5) + env(safe-area-inset-bottom, 0px));
+            left: 50%;
+            right: auto;
+            transform: translateX(-50%);
+            display: flex;
+            gap: var(--mobile-space-1);
+            background: var(--glass-background-heavy);
+            backdrop-filter: var(--glass-backdrop-heavy);
+            -webkit-backdrop-filter: var(--glass-backdrop-heavy);
+            padding: var(--mobile-space-2);
+            border-radius: var(--mobile-radius-2xl);
+            border: 1px solid var(--glass-border-medium);
+            box-shadow: var(--glass-shadow-heavy);
+            z-index: 200;
+            
+            /* Ensure perfect centering */
+            margin-left: auto;
+            margin-right: auto;
+            max-width: calc(100vw - 2 * var(--mobile-space-4));
+        }
+
+        .dockButton {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 60px;
+        }
+
+        .dockButton:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .dockButton.active {
+            background: rgba(32, 178, 170, 0.8);
+        }
+
+        .dockButton.disabled,
+        .dockButton:disabled {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+        }
+
+        .dockButton.disabled:hover,
+        .dockButton:disabled:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.3);
+            transform: none;
+        }
+
+        .dockIcon {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .dockLabel {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+
+        /* Additional centering support for edge cases */
+        @supports (inset-inline: 0) {
+            .controlDock {
+                left: auto;
+                right: auto;
+                inset-inline: 0;
+                width: fit-content;
+                margin-inline: auto;
+            }
+        }
+
+        /* Fallback for browsers without env() support */
+        @supports not (padding: env(safe-area-inset-bottom)) {
+            .controlDock {
+                bottom: var(--mobile-space-5);
+            }
+        }
+
+        /* Media queries for different screen sizes */
+        @media (max-width: 480px) {
+            .controlDock {
+                bottom: calc(var(--mobile-space-4) + env(safe-area-inset-bottom, 0px));
+                padding: var(--mobile-space-1);
+            }
+            
+            @supports not (padding: env(safe-area-inset-bottom)) {
+                .controlDock {
+                    bottom: var(--mobile-space-4);
+                }
+            }
+        }
+
+        @media (max-width: 360px) {
+            .controlDock {
+                bottom: calc(var(--mobile-space-3) + env(safe-area-inset-bottom, 0px));
+                padding: var(--mobile-space-1);
+            }
+            
+            @supports not (padding: env(safe-area-inset-bottom)) {
+                .controlDock {
+                    bottom: var(--mobile-space-3);
+                }
+            }
+        }
+
+        .test-info {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-size: 14px;
+            z-index: 100;
+        }
+
+        .alignment-status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        .aligned {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+        }
+
+        .misaligned {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="alignment-grid">
+        <div class="grid-lines"></div>
+        <div class="center-line"></div>
+    </div>
+
+    <div class="test-info">
+        <div><strong>Mobile Dock Alignment Test</strong></div>
+        <div>Screen: <span id="screenSize"></span></div>
+        <div>Viewport: <span id="viewportSize"></span></div>
+        <div>Safe Area Bottom: <span id="safeAreaBottom"></span></div>
+        <div class="alignment-status" id="alignmentStatus">Checking alignment...</div>
+    </div>
+
+    <div class="test-content">
+        <h1>Mobile Navigation Dock Test</h1>
+        <p>The dock below should be perfectly centered horizontally.</p>
+        <p>The red line shows the exact center of the viewport.</p>
+        <p>Resize the window or rotate your device to test different scenarios.</p>
+    </div>
+
+    <!-- Mobile dock -->
+    <div class="controlDock" id="controlDock">
+        <button class="dockButton active">
+            <span class="dockIcon">Aa</span>
+            <span class="dockLabel">Text</span>
+        </button>
+        <button class="dockButton">
+            <span class="dockIcon">⚡</span>
+            <span class="dockLabel">Effects</span>
+        </button>
+        <button class="dockButton">
+            <span class="dockIcon">⭐</span>
+            <span class="dockLabel">Pro</span>
+        </button>
+        <button class="dockButton disabled" disabled>
+            <span class="dockIcon">🤖</span>
+            <span class="dockLabel">AI Agent</span>
+        </button>
+        <button class="dockButton">
+            <span class="dockIcon">💾</span>
+            <span class="dockLabel">Export</span>
+        </button>
+    </div>
+
+    <script>
+        function checkAlignment() {
+            const dock = document.getElementById('controlDock');
+            const screenSizeEl = document.getElementById('screenSize');
+            const viewportSizeEl = document.getElementById('viewportSize');
+            const safeAreaBottomEl = document.getElementById('safeAreaBottom');
+            const alignmentStatusEl = document.getElementById('alignmentStatus');
+            
+            const screenWidth = screen.width;
+            const screenHeight = screen.height;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            screenSizeEl.textContent = `${screenWidth}×${screenHeight}`;
+            viewportSizeEl.textContent = `${viewportWidth}×${viewportHeight}`;
+            
+            // Try to get safe area inset
+            const safeAreaBottom = getComputedStyle(document.documentElement)
+                .getPropertyValue('env(safe-area-inset-bottom)') || '0px';
+            safeAreaBottomEl.textContent = safeAreaBottom;
+            
+            // Check dock alignment
+            const dockRect = dock.getBoundingClientRect();
+            const dockCenter = dockRect.left + dockRect.width / 2;
+            const viewportCenter = viewportWidth / 2;
+            const tolerance = 1; // 1px tolerance
+            
+            const isAligned = Math.abs(dockCenter - viewportCenter) <= tolerance;
+            const offset = Math.round(dockCenter - viewportCenter);
+            
+            if (isAligned) {
+                alignmentStatusEl.textContent = '✅ Perfectly Centered';
+                alignmentStatusEl.className = 'alignment-status aligned';
+            } else {
+                alignmentStatusEl.textContent = `❌ Offset by ${offset}px ${offset > 0 ? 'right' : 'left'}`;
+                alignmentStatusEl.className = 'alignment-status misaligned';
+            }
+        }
+        
+        // Check alignment on load and resize
+        checkAlignment();
+        window.addEventListener('resize', checkAlignment);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(checkAlignment, 100);
+        });
+        
+        // Continuous checking for smooth updates
+        setInterval(checkAlignment, 500);
+    </script>
+</body>
+</html>

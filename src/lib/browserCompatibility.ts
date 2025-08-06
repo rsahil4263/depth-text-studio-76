@@ -248,7 +248,7 @@ export function getBrowserPerformanceProfile(): {
         expectedProcessingTime: 2000, // Chrome is typically fastest
         maxImageSize: 15 * 1024 * 1024, // 15MB
         memoryLimit: 1024 * 1024 * 1024, // 1GB
-        optimizationLevel: 'medium' as const
+        optimizationLevel: 'high'
       };
       break;
       
@@ -257,7 +257,7 @@ export function getBrowserPerformanceProfile(): {
         expectedProcessingTime: 2500, // Similar to Chrome
         maxImageSize: 12 * 1024 * 1024, // 12MB
         memoryLimit: 768 * 1024 * 1024, // 768MB
-        optimizationLevel: 'medium' as const
+        optimizationLevel: 'high'
       };
       break;
       
@@ -275,7 +275,7 @@ export function getBrowserPerformanceProfile(): {
         expectedProcessingTime: 4000, // Conservative estimate
         maxImageSize: 6 * 1024 * 1024, // 6MB
         memoryLimit: 256 * 1024 * 1024, // 256MB
-        optimizationLevel: 'medium' as const
+        optimizationLevel: 'low'
       };
       break;
   }
